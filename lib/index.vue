@@ -51,7 +51,11 @@ export default {
         return () => {};
       }
     },
-    destroy: Boolean
+    destroy: Boolean,
+    uploadType: {
+      type: String,
+      require: true
+    }
   },
   computed: {
     mixedConfig() {
@@ -91,7 +95,7 @@ export default {
     // 实例化编辑器之前-JS依赖检测
     _beforeInitEditor(value) {
       // 准确判断ueditor.config.js和ueditor.all.js是否均已加载 仅加载完ueditor.config.js时UE对象和UEDITOR_CONFIG对象也存在,仅加载完ueditor.all.js时UEDITOR_CONFIG对象也存在,但为空对象
-      !!window.UM && !!window.UEDITOR_CONFIG && Object.keys(window.UEDITOR_CONFIG).length !== 0 && !!window.UM.getEditor ? this._initEditor(value) : this._loadScripts().then(() => this._initEditor(value));
+      !!window.UM && !!window.UM.getEditor ? this._initEditor(value) : this._loadScripts().then(() => this._initEditor(value));
     },
     // 实例化编辑器
     _initEditor(value) {
@@ -100,6 +104,7 @@ export default {
         this.editor = UM.getEditor(this.id, this.mixedConfig);
         this.readyValue = value;
         this.editor.ready(() => {
+          this.editor.execCommand('serverparam', 'type', this.uploadType);
           this.isReady = true;
           this.$emit('ready', this.editor);
           this.editor.setContent(this.readyValue);
