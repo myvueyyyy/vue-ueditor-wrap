@@ -37,7 +37,13 @@ export default {
   props: {
     value: {
       type: String,
-      default: 'Vue + UEditor + v-model双向绑定'
+      default: ''
+    },
+    control: {
+      type: Object,
+      default: function() {
+        return {};
+      }
     },
     config: {
       type: Object,
@@ -220,6 +226,7 @@ export default {
     value: {
       handler(value) {
         this.editor ? this._setContent(value) : this._beforeInitEditor(value);
+        this.$emit('change', value, this.control);
       },
       immediate: true
     }
