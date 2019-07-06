@@ -20,6 +20,7 @@ export default {
   name: 'VueUeditorWrap',
   data() {
     return {
+      isLoading:false,
       id:
         'editor' +
         Math.random()
@@ -100,19 +101,32 @@ export default {
     },
     // 实例化编辑器之前-JS依赖检测
     _beforeInitEditor(value) {
+      this.readyValue = value;
+      const load = () => {
+        if(!this.isLoading){
+          this.load();
+        }
+      }
       // 准确判断ueditor.config.js和ueditor.all.js是否均已加载 仅加载完ueditor.config.js时UE对象和UEDITOR_CONFIG对象也存在,仅加载完ueditor.all.js时UEDITOR_CONFIG对象也存在,但为空对象
-      !!window.UM && !!window.UM.getEditor ? this._initEditor(value) : this._loadScripts().then(() => this._initEditor(value));
+      !!window.UM && !!window.UM.getEditor ? this._initEditor(value) : load();
+    },
+    load(){
+      this.isLoading = true;
+      this._loadScripts().then(() => {
+        this._initEditor(this.readyValue)
+      });
     },
     // 实例化编辑器
     _initEditor(value) {
       this.$nextTick(() => {
+        console.log('next=>' + value);
         this.init();
         this.editor = UM.getEditor(this.id, this.mixedConfig);
-        this.readyValue = value;
         this.editor.ready(() => {
           this.editor.execCommand('serverparam', 'type', this.uploadType);
           this.isReady = true;
           this.$emit('ready', this.editor);
+           console.log('readyValue=>' + this.readyValue);
           this.editor.setContent(this.readyValue);
           this.editor.addListener('contentChange', () => {
             this.$emit('input', this.editor.getContent());
@@ -211,6 +225,7 @@ export default {
     },
     // 设置内容
     _setContent(value) {
+      console.log('setcontent=>' + value)
       if (this.isReady) {
         value === this.editor.getContent() || this.editor.setContent(value);
       } else {
